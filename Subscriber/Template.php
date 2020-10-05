@@ -85,17 +85,18 @@ class Template implements SubscriberInterface
         $controller = $args->get('subject');
         $view = $controller->View();
 
-        $userId = $this->container->get('session')->get('sUserId');
-        if ($userId){
-            $attribute = $this->dataLoader->load('s_user_attributes', $userId);
-            $avatarUrl = "media/image/" . $attribute['sten_avatar'];
-            $this->templateManager->addTemplateDir($this->pluginDir . '/Resources/views');
+        $this->templateManager->addTemplateDir($this->pluginDir . '/Resources/views');
 
-            $view->assign('StenAvatarUrl', $avatarUrl);
-        }else{
-            $this->templateManager->addTemplateDir($this->pluginDir . '/Resources/views');
+        $userId = (int)$this->container->get('session')->get('sUserId');
 
+        if (0 == $userId) {
+            return;
         }
+
+        $attribute = $this->dataLoader->load('s_user_attributes', $userId);
+        $avatarUrl = "media/image/" . $attribute['sten_avatar'];
+
+        $view->assign('StenAvatarUrl', $avatarUrl);
     }
 
     function dumb($data)
