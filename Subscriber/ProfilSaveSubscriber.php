@@ -68,29 +68,45 @@ class ProfilSaveSubscriber implements SubscriberInterface
     {
         /** @var UploadedFile $file */
         $file = $this->requestStack->getCurrentRequest()->files->get("profile")['stenAvatar'];
-//        $this->dumb($file);
+//        $mediaService = $this->container->get('shopware_media.media_service');
+//        $fileExists = $mediaService->has('media/image/' . $file->getClientOriginalName());
+//        // if file already there skip
+//        if ($fileExists) {
+//            return;
+//        }
+
+        // get userId from session to check if user is connected
         $userId = $this->container->get('session')->get('sUserId');
 
-        $attribute = $this->dataLoader->load('s_user_attributes', $userId);
-
+        if (!$userId) {
+            return;
+        }
         /** @var Customer $customer */
         $customer = $this->container->get('models')->find(Customer::class, $userId);
 
-        if ($customer) {
-            $attribute = $customer->getAttribute();
+        if (!$customer) {
+            return;
         }
-        $mediaRepository = $this->modelManager->getRepository(Album::class);
+        $attribute = $customer->getAttribute();
+
+        $albumRepository = $this->modelManager->getRepository(Album::class);
 
         /** @var Album $mediaAlbum */
-        $mediaAlbum = $mediaRepository->findOneBy(['name' => 'Avatar']);
+        $mediaAlbum = $albumRepository->findOneBy(['name' => 'Avatar']);
 
-        $media = new Media();
+        $mediaRepository = $this->modelManager->getRepository(Media::class);
+        $media = $mediaRepository->findOneBy(['userId' => $userId]);
+
+        // if no media create a new one otherwise use the existing one
+        if (!$media) {
+            $media = new Media();
+            $media->setUserId($userId);
+            $media->setAlbumId($mediaAlbum->getId());
+        }
+
         $media->setFile($file);
-        $media->setAlbumId($mediaAlbum->getId());
         $media->setDescription($file->getClientOriginalName());
-        $media->setUserId($userId);
         $media->setCreated(new \DateTime());
-
         $mediaAlbum->setMedia(new ArrayCollection([$media]));
 
         $this->modelManager->persist($media);

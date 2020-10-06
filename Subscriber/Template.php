@@ -74,7 +74,7 @@ class Template implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PreDispatch' => 'onPreDispatch',
+            'Enlight_Controller_Action_Frontend_PreDispatch' => 'onPreDispatch',
         ];
     }
 
