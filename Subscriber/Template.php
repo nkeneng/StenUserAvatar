@@ -74,7 +74,7 @@ class Template implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_Frontend_PreDispatch' => 'onPreDispatch',
+            'Enlight_Controller_Action_PreDispatch_Frontend' => 'onPreDispatch',
         ];
     }
 
@@ -97,13 +97,5 @@ class Template implements SubscriberInterface
         $avatarUrl = "media/image/" . $attribute['sten_avatar'];
 
         $view->assign('StenAvatarUrl', $avatarUrl);
-    }
-
-    function dumb($data)
-    {
-        /* error_log(_METHOD.'::'.LINE_.'::$filePath> '.print_r($filePath, 1)); */
-        highlight_string("<?php\n " . var_export($data, true) . "?>");
-        echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
-        die();
     }
 }

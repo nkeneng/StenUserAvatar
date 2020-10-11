@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Enlight\Event\SubscriberInterface;
+use Enlight_Hook_HookArgs;
 use Shopware\Bundle\AttributeBundle\Service\DataLoaderInterface;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Customer;
@@ -60,20 +61,14 @@ class ProfilSaveSubscriber implements SubscriberInterface
     }
 
     /**
-     * @param \Enlight_Hook_HookArgs $args
+     * @param Enlight_Hook_HookArgs $args
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function onBeforeSaveProfile(\Enlight_Hook_HookArgs $args)
+    public function onBeforeSaveProfile(Enlight_Hook_HookArgs $args)
     {
         /** @var UploadedFile $file */
         $file = $this->requestStack->getCurrentRequest()->files->get("profile")['stenAvatar'];
-//        $mediaService = $this->container->get('shopware_media.media_service');
-//        $fileExists = $mediaService->has('media/image/' . $file->getClientOriginalName());
-//        // if file already there skip
-//        if ($fileExists) {
-//            return;
-//        }
 
         // get userId from session to check if user is connected
         $userId = $this->container->get('session')->get('sUserId');
@@ -95,37 +90,29 @@ class ProfilSaveSubscriber implements SubscriberInterface
         $mediaAlbum = $albumRepository->findOneBy(['name' => 'Avatar']);
 
         $mediaRepository = $this->modelManager->getRepository(Media::class);
+        /** @var Media $media */
         $media = $mediaRepository->findOneBy(['userId' => $userId]);
-
+        $mediaService = $this->container->get('shopware_media.media_service');
         // if no media create a new one otherwise use the existing one
-        if (!$media) {
-            $media = new Media();
-            $media->setUserId($userId);
-            $media->setAlbumId($mediaAlbum->getId());
+        if ($media) {
+            $mediaService->delete('media/image/' . $media->getFileName());
+            $this->modelManager->remove($media);
         }
-
+        $media = new Media();
+        $media->setUserId($userId);
+        $media->setAlbumId($mediaAlbum->getId());
         $media->setFile($file);
         $media->setDescription($file->getClientOriginalName());
         $media->setCreated(new \DateTime());
         $mediaAlbum->setMedia(new ArrayCollection([$media]));
+        $media->onUpdate();
 
         $this->modelManager->persist($media);
         $this->modelManager->persist($mediaAlbum);
 
         $attribute->setStenAvatar($file->getClientOriginalName());
-
         $this->modelManager->persist($attribute);
-
         $this->modelManager->flush();
-
-    }
-
-    function dumb($data)
-    {
-        /* error_log(_METHOD.'::'.LINE_.'::$filePath> '.print_r($filePath, 1)); */
-        highlight_string("<?php\n " . var_export($data, true) . "?>");
-        echo '<script>document.getElementsByTagName("code")[0].getElementsByTagName("span")[1].remove() ;document.getElementsByTagName("code")[0].getElementsByTagName("span")[document.getElementsByTagName("code")[0].getElementsByTagName("span").length - 1].remove() ; </script>';
-        die();
     }
 
 }

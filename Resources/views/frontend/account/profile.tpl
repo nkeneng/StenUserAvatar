@@ -3,9 +3,9 @@
 {block name="frontend_account_profile_profile_body"}
     {$smarty.block.parent}
     <div class="panel--body is--wide">
-        <input  type="file"
-               id="avatar" name="profile[stenAvatar]"
-               accept="image/png, image/jpeg">
+        <div class="file-upload-wrapper" data-button="Avatar upload" data-text="Select your file!">
+            <input id="avatar" name="profile[stenAvatar]" accept="image/png, image/jpeg" type="file" class="file-upload-field" value="">
+        </div>
     </div>
 {/block}
 {block name="frontend_account_profile_profile_actions_submit"}

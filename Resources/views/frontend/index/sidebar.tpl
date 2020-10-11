@@ -3,7 +3,6 @@
 {block name='frontend_index_left_categories_wrapper'}
     {if $StenAvatarUrl}
         <div class="logo--shop block">
-
             <picture>
                 <source srcset="{media path={$StenAvatarUrl}}" media="(min-width: 78.75em)">
                 <source srcset="{media path={$StenAvatarUrl}}" media="(min-width: 64em)">
