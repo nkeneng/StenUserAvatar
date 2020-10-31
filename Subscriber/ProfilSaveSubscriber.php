@@ -95,8 +95,12 @@ class ProfilSaveSubscriber implements SubscriberInterface
         $mediaService = $this->container->get('shopware_media.media_service');
         // if no media create a new one otherwise use the existing one
         if ($media) {
-            $mediaService->delete('media/image/' . $media->getFileName());
-            $this->modelManager->remove($media);
+            try {
+                $mediaService->delete('media/image/' . $media->getFileName());
+                $this->modelManager->remove($media);
+            } catch (\Exception $e) {
+                error_log(__METHOD__ . '::' . __LINE__ . '::> ' . print_r('File not found', 1));
+            }
         }
         $media = new Media();
         $media->setUserId($userId);
